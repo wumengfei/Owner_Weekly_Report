@@ -61,14 +61,16 @@ def get_week_show(time_point):
 
     show_dic = dict()
     week_list = get_file_loc(time_point)
+    index = -1
     for date_item in week_list:
+        index += 1
         file_url = "data/%s/show_nums.txt" % date_item
         for line in open(file_url, 'r'):
             content = line.strip().split('\t')
             house_code = content[0]
             show_num = int(content[1])
-            show_dic.setdefault(house_code, [])
-            show_dic[house_code].append(show_num)
+            show_dic.setdefault(house_code, [0]*7)
+            show_dic[house_code][index] = show_num
     return show_dic
 
 def get_week_view(time_point):
@@ -82,15 +84,18 @@ def get_week_view(time_point):
 
     view_dic = dict()
     week_list = get_file_loc(time_point)
+    index = -1
     for date_item in week_list:
+        index += 1
         file_url = "data/%s/view_nums.txt" % date_item
         for line in open(file_url, 'r'):
             content = line.strip().split('\t')
             house_code = content[0]
             view_num = int(content[1])
-            view_dic.setdefault(house_code, [])
-            view_dic[house_code].append(view_num)
+            view_dic.setdefault(house_code, [0]*7)
+            view_dic[house_code][index] = view_num
     return view_dic
 
 if __name__ == "__main__":
-    pass
+    pt = datetime.today() - timedelta(days=1)
+    print(get_week_view(pt))
