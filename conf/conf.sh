@@ -10,10 +10,10 @@ export PT=${DATE}000000
 export LAST_PT=${LAST_DATE}000000
 
 export result_dir="data/${DATE}"
-if [ ! -d $result_dir ];then
-    mkdir $result_dir
+if [ ! -d ${result_dir} ];then
+    mkdir ${result_dir}
 fi
 
-export HOUSE_FOLLOW=result_dir/follow_nums.txt
-export HOUSE_VIEW=result_dir/view_nums.txt
-export HOUSE_SHOW=result_dir/show_nums.txt
+export HOUSE_FOLLOW=${result_dir}/follow_nums.txt
+export HOUSE_VIEW=${result_dir}/view_nums.txt
+export HOUSE_SHOW=${result_dir}/show_nums.txt

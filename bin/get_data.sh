@@ -1,7 +1,6 @@
 #!/bin/bash
 source conf/conf.sh $1 $2
 
-
 function get_follow_nums
 {
     # 获取 (LAST_PT, PT] 房源关注数据
@@ -10,8 +9,7 @@ function get_follow_nums
         FROM stg.stg_lianjia_lianjia_user_favorite_da
         WHERE pt='${PT}' and favorite_type='ershoufang'
         and bit_status=1
-        and CONCAT(SUBSTR(ctime,1,4),SUBSTR(ctime,6,2),SUBSTR(ctime,9,2),'000000') > '${LAST_PT}'
-        and CONCAT(SUBSTR(ctime,1,4),SUBSTR(ctime,6,2),SUBSTR(ctime,9,2),'000000') <= '${PT}'
+        and CONCAT(SUBSTR(ctime,1,4),SUBSTR(ctime,6,2),SUBSTR(ctime,9,2),'000000') = '${PT}'
         group by favorite_condition;
     "
     hive -e "${SQL}"
@@ -23,7 +21,7 @@ function get_view_nums
     SQL="SELECT house_code as house_code
         , delta as pvnum
         FROM data_center.yzd_house_hot_pv_di
-        WHERE pt > '${LAST_PT}' and pt <= '${PT}'
+        WHERE pt = '${PT}'
         and channel = 'ershoufang'
         and delta <> '0';
     "
@@ -42,8 +40,7 @@ function get_show_nums
         and (reciprocal_frame = 3 or reciprocal_frame = 0)
         and customer_code <> ''
         and house_code <> ''
-        and CONCAT(SUBSTR(ctime,1,4),SUBSTR(ctime,6,2),SUBSTR(ctime,9,2),'000000') > '${LAST_PT}'
-        and CONCAT(SUBSTR(ctime,1,4),SUBSTR(ctime,6,2),SUBSTR(ctime,9,2),'000000') <= '${PT}'
+        and CONCAT(SUBSTR(ctime,1,4),SUBSTR(ctime,6,2),SUBSTR(ctime,9,2),'000000') = '${PT}'
         group by house_code;
     "
     hive -e "${SQL}"
