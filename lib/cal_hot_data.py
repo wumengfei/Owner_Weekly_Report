@@ -15,6 +15,7 @@ sys.path.append('lib')
 # import log
 from datetime import datetime, timedelta
 import pandas as pd
+import redis
 
 
 def get_file_loc(time_point):
@@ -52,7 +53,7 @@ def get_week_follow(time_point):
     return follow_dic
 
 def get_week_show(time_point):
-    '''计算每套房源自time_point向前推一周内的所有关注量, 计算逻辑为每套房源该周七天关注量的极大值(da表)
+    '''计算每套房源自time_point向前推一周内的所有带看量, 并以列表的形式返回7天的数据
     Args:
         time_point: datetime.datetime类型
     Return:
@@ -74,7 +75,7 @@ def get_week_show(time_point):
     return show_dic
 
 def get_week_view(time_point):
-    '''计算每套房源自time_point向前推一周内的所有关注量, 计算逻辑为每套房源该周七天关注量的极大值(da表)
+    '''计算每套房源自time_point向前推一周内的所有浏览量, 并以列表的形式返回7天的数据
     Args:
         time_point: datetime.datetime类型
     Return:
@@ -96,6 +97,38 @@ def get_week_view(time_point):
             view_dic[house_code][index] = view_num
     return view_dic
 
+def union_hot_data(follow_dic, view_dic, show_dic):
+    '''将每套房源的三个热度数据(关注/浏览/带看)整合入字典, 为redis提供数据源
+    Args:
+        follow_dic, view_dic, show_dic; 其中, 关注字典中value为数字, 其余两个为列表.
+    Return:
+
+        hot_dic: dict, house_code-->["view_nums"]/["show_nums"]/["follow_nums"]
+    '''
+    hot_dic = dict()
+    for house_code, num_lst in view_dic.iteritems():
+        hot_dic.setdefault(house_code, {})
+        hot_dic[house_code]["view_nums"] = num_lst
+    for house_code, num_lst in show_dic.iteritems():
+        hot_dic.setdefault(house_code, {"view_nums": [0,0,0,0,0,0,0]})
+        hot_dic[house_code]["show_nums"] = num_lst
+    for house_code, nums in follow_dic.iteritems():
+        hot_dic.setdefault(house_code, {"view_nums": [0,0,0,0,0,0,0], "show_nums": [0,0,0,0,0,0,0]})
+        hot_dic[house_code]["follow_nums"] = nums
+    return hot_dic
+
+def update_redis(redis_key, house_date, hot_dic):
+    redis_info = conf.redis_conn_info
+    redis_conn = redis.Redis( host = redis_info["host"], port = redis_info["port"], db = redis_info["db"])
+
+    for key, val in hot_dic:
+        redis_conn.set(redis_key+key+'_'+house_date, val)
+
 if __name__ == "__main__":
     pt = datetime.today() - timedelta(days=1)
-    print(get_week_view(pt))
+    follow_dic = get_week_follow(pt)
+    view_dic = get_week_view(pt)
+    show_dic = get_week_show(pt)
+    hot_dic = union_hot_data(follow_dic, view_dic, show_dic)
+    house_date = pt.strftime('%Y%m%d')
+    update_redis("yzd_house_hot_", house_date, hot_dic)

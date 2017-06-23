@@ -2,7 +2,7 @@
 
 #redis配置参数
 redis_conn_info = {
-    "host": "m11164.ares.redis.ljnode.com",\
-    "port": 11164,\
+    "host": "172.30.0.20",\
+    "port": 6379,\
     "db": 1
 }
