@@ -11,8 +11,8 @@
 import sys
 sys.path.append('conf')
 sys.path.append('lib')
-# import conf
-# import log
+import conf
+import log
 from datetime import datetime, timedelta
 import pandas as pd
 import redis
@@ -121,8 +121,8 @@ def update_redis(redis_key, house_date, hot_dic):
     redis_info = conf.redis_conn_info
     redis_conn = redis.Redis( host = redis_info["host"], port = redis_info["port"], db = redis_info["db"])
 
-    for key, val in hot_dic:
-        redis_conn.set(redis_key+key+'_'+house_date, val)
+    for key in hot_dic:
+        redis_conn.set(redis_key+key+'_'+house_date, hot_dic[key])
 
 if __name__ == "__main__":
     pt = datetime.today() - timedelta(days=1)
@@ -132,3 +132,4 @@ if __name__ == "__main__":
     hot_dic = union_hot_data(follow_dic, view_dic, show_dic)
     house_date = pt.strftime('%Y%m%d')
     update_redis("yzd_house_hot_", house_date, hot_dic)
+    print("hot data update at %s" % house_date)

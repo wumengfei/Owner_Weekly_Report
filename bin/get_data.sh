@@ -47,5 +47,8 @@ function get_show_nums
 }
 
 get_follow_nums > ${HOUSE_FOLLOW}
+echo "关注数据已拉取"
 get_view_nums > ${HOUSE_VIEW}
+echo "浏览数据已拉取"
 get_show_nums > ${HOUSE_SHOW}
+echo "带看数据已拉取"
