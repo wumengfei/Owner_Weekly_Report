@@ -41,3 +41,5 @@ if not os.path.exists(output_dir):
 output = output_dir + "/" + "output.txt"
 
 exp_time = 86400 * 35 # 周报redis中key的有效时长
+
+homepage_show = 3

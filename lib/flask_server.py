@@ -24,8 +24,11 @@ import redis
 import numpy as np
 import pdb
 import traceback
+from redis_client import *
 
 app = Flask(__name__)
+
+rc = Redis_client(conf.cluster_redis_conn)
 
 def get_hot_info(info_dict, house_date):
     house_code = house_date.split("_")[0]
@@ -66,6 +69,34 @@ def get_hot_info(info_dict, house_date):
     info_dict["data"]["showing_percent"] = showing_percent
     info_dict["data"]["follow_percent"] = follow_percent
 
+def get_similar_info_homepage(result_dict, similar_dict):
+    similar_house_deal_num = 0  # 成交套数
+    similar_house_deal_avg_showing_time = 0  # 平均带看次数
+    similar_house_deal_list = []
+
+    if similar_dict.has_key("sold_similar"):
+        similar_house_deal_list = similar_dict["sold_similar"]
+        similar_house_deal_num = len(similar_house_deal_list)
+        showing_nums = 0
+        deal_circle = 0
+        # result_dict[key]["sold_similar"].append((house, build_size, showing, deal_interval))
+        for item in similar_dict["sold_similar"]:
+            showing_nums += float(item[2])
+            deal_circle += float(item[3])
+        # 计算相似成交房源的平均带看次数和成交周期
+        if (similar_house_deal_num > 0):
+            similar_house_deal_avg_showing_time = showing_nums / similar_house_deal_num # 平均带看次数
+            similar_house_deal_avg_deal_circle = deal_circle / similar_house_deal_num # 平均成交周期
+
+    result_dict["data"]["similar_house_deal_num"] = similar_house_deal_num
+    result_dict["data"]["similar_house_deal_avg_showing_time"] = similar_house_deal_avg_showing_time
+    result_dict["data"]["similar_house_deal_avg_deal_circle"] = similar_house_deal_avg_deal_circle
+
+    if similar_house_deal_num > conf.homepage_show:
+        result_dict["data"]["similar_house_deal_list"] = similar_house_deal_list[0:conf.homepage_show]
+    else:
+        result_dict["data"]["similar_house_deal_list"] = similar_house_deal_list
+
 @app.route('/yzd_weekly_report_homepage')
 def get_yzd_weekly_report():
     args_dict = request.args.to_dict()
@@ -85,7 +116,8 @@ def get_yzd_weekly_report():
 
     # 获取相似房源数据
     try:
-        similar_house =
+        similar_house = json.loads(rc.rc.get(redis_similar_key))
+        get_similar_info_homepage(info_dict, similar_house[house_date])
     except Exception, e:
         info_dict["data"]['error_code'] = 1
         info_dict["data"]['error_msg'] += "can not get similar information;"
@@ -93,14 +125,6 @@ def get_yzd_weekly_report():
         info_dict["data"]["similar_house_deal_avg_showing_time"] = 0
         info_dict["data"]["similar_house_deal_avg_deal_circle"] = 0
         info_dict["data"]["similar_house_deal_list"] = []
-        info_dict["data"]["similar_house_list_new_add_num"] = 0
-        info_dict["data"]["similar_house_list_all_on_sale"] = 0
-        info_dict["data"]["similar_house_list_avg_list_price"] = 0
-        info_dict["data"]["similar_house_list_list"] = []
-        info_dict["data"]["similar_house_price_up_num"] = 0
-        info_dict["data"]["similar_house_price_up_percent"] = 0
-        info_dict["data"]["similar_house_price_down_num"] = 0
-        info_dict["data"]["similar_house_price_down_percent"] = 0
         traceback.print_exc()
 
     # 获取热度数据
