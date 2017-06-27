@@ -83,8 +83,29 @@ def get_yzd_weekly_report():
     info_dict['data']['error_code'] = 0
     info_dict['data']['error_msg'] = ''
 
+    # 获取相似房源数据
     try:
-        print "enter try"
+        similar_house =
+    except Exception, e:
+        info_dict["data"]['error_code'] = 1
+        info_dict["data"]['error_msg'] += "can not get similar information;"
+        info_dict["data"]["similar_house_deal_num "] = 0
+        info_dict["data"]["similar_house_deal_avg_showing_time"] = 0
+        info_dict["data"]["similar_house_deal_avg_deal_circle"] = 0
+        info_dict["data"]["similar_house_deal_list"] = []
+        info_dict["data"]["similar_house_list_new_add_num"] = 0
+        info_dict["data"]["similar_house_list_all_on_sale"] = 0
+        info_dict["data"]["similar_house_list_avg_list_price"] = 0
+        info_dict["data"]["similar_house_list_list"] = []
+        info_dict["data"]["similar_house_price_up_num"] = 0
+        info_dict["data"]["similar_house_price_up_percent"] = 0
+        info_dict["data"]["similar_house_price_down_num"] = 0
+        info_dict["data"]["similar_house_price_down_percent"] = 0
+        traceback.print_exc()
+
+    # 获取热度数据
+    try:
+        print "get hot data!"
         #hot_dict = json.loads(rc.rc.get(redis_hot_key))
         get_hot_info(info_dict, house_date)
     except Exception, e:

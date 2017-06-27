@@ -16,6 +16,7 @@ import log
 from datetime import datetime, timedelta
 import pandas as pd
 import redis
+import json
 
 
 def get_file_loc(time_point):
@@ -105,24 +106,34 @@ def union_hot_data(follow_dic, view_dic, show_dic):
 
         hot_dic: dict, house_code-->["view_nums"]/["show_nums"]/["follow_nums"]
     '''
+
+    # 之前的写法有bug!!
+    # hot_file = open(conf.hot_data_all, 'w')
     hot_dic = dict()
     for house_code, num_lst in view_dic.iteritems():
-        hot_dic.setdefault(house_code, {})
+        hot_dic.setdefault(house_code, {"view_nums": [0,0,0,0,0,0,0], "show_nums": [0,0,0,0,0,0,0], "follow_nums": 0})
         hot_dic[house_code]["view_nums"] = num_lst
     for house_code, num_lst in show_dic.iteritems():
-        hot_dic.setdefault(house_code, {"view_nums": [0,0,0,0,0,0,0]})
+        hot_dic.setdefault(house_code, {"view_nums": [0,0,0,0,0,0,0], "show_nums": [0,0,0,0,0,0,0], "follow_nums": 0})
         hot_dic[house_code]["show_nums"] = num_lst
     for house_code, nums in follow_dic.iteritems():
-        hot_dic.setdefault(house_code, {"view_nums": [0,0,0,0,0,0,0], "show_nums": [0,0,0,0,0,0,0]})
+        hot_dic.setdefault(house_code, {"view_nums": [0,0,0,0,0,0,0], "show_nums": [0,0,0,0,0,0,0], "follow_nums": 0})
         hot_dic[house_code]["follow_nums"] = nums
+
+    # for keys in hot_dic:
+    #     hot_file.write(json.dumps({keys: hot_dic[keys]}))
+    # hot_file.close()
     return hot_dic
 
 def update_redis(redis_key, house_date, hot_dic):
     redis_info = conf.redis_conn_info
     redis_conn = redis.Redis( host = redis_info["host"], port = redis_info["port"], db = redis_info["db"])
-
+    cnt = 0
     for key in hot_dic:
         redis_conn.set(redis_key+key+'_'+house_date, hot_dic[key])
+        cnt += 1
+        if cnt % 100 == 0:
+            print(cnt, redis_key+key+'_'+house_date)
 
 if __name__ == "__main__":
     pt = datetime.today() - timedelta(days=1)
