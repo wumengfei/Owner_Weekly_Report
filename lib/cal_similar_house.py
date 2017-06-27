@@ -192,7 +192,7 @@ def similar_house_this_week(house_code, sold_house_dict, sold_similar_list):
     :param house_code: 房屋id
     :param sold_house_dict: 本周成交房源信息
     :param sold_similar_list: 该房屋id的相似成交房源列表,依赖于house_code.
-    :return: 按带看量排序的相似房源列表
+    :return: 按带看量排序的相似房源列表 [房源id, 面积, 带看量, 成交周期]
     '''
     result_dict = {}
     today = (datetime.now() - timedelta(days = 1)).strftime("%Y%m%d")
@@ -243,6 +243,18 @@ def weekly_report(sold_house_dict):
         output_obj.close()
         file_obj.close()
 
+def dump_data_to_redis():
+    result = "result/" + conf.day + "/output.txt"
+    yzd_weekly_report_push_key = 'yzd_weekly_report_msg_queue'
+    print result
+
+    for line in open(result, 'r'):
+        tmp_dict = json.loads(line)
+        key = tmp_dict.keys()
+        rc.rc.lpush(yzd_weekly_report_push_key, key[0])
+        hhot_redis_key = 'yzd_weekly_report_' + key[0]
+        rc.rc.set(hhot_redis_key, json.dumps(tmp_dict), ex=conf.exp_time)
+
 if __name__ == "__main__":
     # pt = datetime.today() - timedelta(days=1)
     try:
@@ -250,5 +262,6 @@ if __name__ == "__main__":
         showing_dict = load_showing_data()  # 房源id --> 带看数
         sold_house_dict = deal_house_this_week(showing_dict)  # 成交房源信息:成交价/面积/成交时间/签约时间/成交周期/带看次数
         weekly_report(sold_house_dict) # 将相似房源结果输出到 result/day/output.txt中
+        dump_data_to_redis()
     except Exception, e:
         traceback.print_exc()
