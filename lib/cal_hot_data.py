@@ -108,7 +108,6 @@ def union_hot_data(follow_dic, view_dic, show_dic):
     '''
 
     # 之前的写法有bug!!
-    # hot_file = open(conf.hot_data_all, 'w')
     hot_dic = dict()
     for house_code, num_lst in view_dic.iteritems():
         hot_dic.setdefault(house_code, {"view_nums": [0,0,0,0,0,0,0], "show_nums": [0,0,0,0,0,0,0], "follow_nums": 0})
@@ -120,9 +119,6 @@ def union_hot_data(follow_dic, view_dic, show_dic):
         hot_dic.setdefault(house_code, {"view_nums": [0,0,0,0,0,0,0], "show_nums": [0,0,0,0,0,0,0], "follow_nums": 0})
         hot_dic[house_code]["follow_nums"] = nums
 
-    # for keys in hot_dic:
-    #     hot_file.write(json.dumps({keys: hot_dic[keys]}))
-    # hot_file.close()
     return hot_dic
 
 def update_redis(redis_key, house_date, hot_dic):

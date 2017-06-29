@@ -28,7 +28,6 @@ cluster_redis_conn = {
 index_file = "data/redis_index.txt" # 将redis获取到的
 deal_house = "data/" + day + "/" + "house_deal.txt"
 list_house = "data/" + day + "/" + "house_onsale.txt"
-hot_data_all = "data/" + day + "/" + "hot_data.txt"
 
 # base on today, minus two weeks, means save two week data
 redis_save_window = datetime.strftime((now - timedelta(days=29)), "%Y%m%d")
