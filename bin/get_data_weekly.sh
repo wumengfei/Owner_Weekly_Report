@@ -49,13 +49,32 @@ function get_house_list_all
 }
 
 # 数据需要重新拉取!!
+#function get_hot_house
+#{
+#    # 近一周热度数据(房屋线下带看次数)
+#    SQL="SELECT *
+#         FROM data_center.hot_bd_dw_house_showing_num_day
+#         WHERE pt <='${PT}' and pt > '${LAST_PT}';
+#         "
+#    hive -e "${SQL}"
+#}
+
 function get_hot_house
 {
-    # 近一周热度数据(房屋线下带看次数)
-    SQL="SELECT *
-         FROM data_center.hot_bd_dw_house_showing_num_day
-         WHERE pt <='${PT}' and pt > '${LAST_PT}';
-         "
+    # 获取 (LAST_PT, PT] 房源带看数据
+    SQL="SELECT house_code as house_code
+        , count(1) as show_num
+        FROM stg.stg_lianjia_house_showing_house_da
+        WHERE pt = '${PT}'
+        and status = 1
+        and audit_status in (0,1,4)
+        and (reciprocal_frame = 3 or reciprocal_frame = 0)
+        and customer_code <> ''
+        and house_code <> ''
+        and CONCAT(SUBSTR(ctime,1,4),SUBSTR(ctime,6,2),SUBSTR(ctime,9,2),'000000') <= '${PT}'
+        and CONCAT(SUBSTR(ctime,1,4),SUBSTR(ctime,6,2),SUBSTR(ctime,9,2),'000000') > '${LAST_PT}'
+        group by house_code;
+    "
     hive -e "${SQL}"
 }
 
