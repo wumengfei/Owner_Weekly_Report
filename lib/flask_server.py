@@ -45,10 +45,16 @@ def get_hot_info(info_dict, house_date):
     this_hot_key = "yzd_house_hot_" + house_date
     last_hot_key = "yzd_house_hot_" + house_code + '_' + last_date
     print redis_conn.get(this_hot_key)
+    print redis_conn.get(last_hot_key)
+
     this_hot_info = eval(str(redis_conn.get(this_hot_key)))
     last_hot_info = eval(str(redis_conn.get(last_hot_key)))
-    if this_hot_info == None or last_hot_info == None:
-        print "no key"
+    if this_hot_info == None:
+        info_dict["data"]["error_msg"] += "loss hot data this week"
+        exit(1)
+    if last_hot_info == None:
+        info_dict["data"]["error_msg"] += "loss hot data last week"
+        exit(1)
     print type(this_hot_info)
     info_dict["data"]["view_list_of_this_week"] = this_hot_info["view_nums"]
     info_dict["data"]["total_view_num_of_this_week"] = np.sum(this_hot_info["view_nums"])
@@ -72,6 +78,7 @@ def get_hot_info(info_dict, house_date):
 def get_similar_info_homepage(result_dict, similar_dict):
     similar_house_deal_num = 0  # 成交套数
     similar_house_deal_avg_showing_time = 0  # 平均带看次数
+    similar_house_deal_avg_deal_circle = 0  # 平均成交周期
     similar_house_deal_list = []
 
     if similar_dict.has_key("sold_similar"):
@@ -87,6 +94,10 @@ def get_similar_info_homepage(result_dict, similar_dict):
         if (similar_house_deal_num > 0):
             similar_house_deal_avg_showing_time = showing_nums / similar_house_deal_num # 平均带看次数
             similar_house_deal_avg_deal_circle = deal_circle / similar_house_deal_num # 平均成交周期
+        else:
+            result_dict["data"]["error_msg"] += 'similar deal house num <= 0!'
+    else:
+        result_dict["data"]["error_msg"] += 'no similar sold house!'
 
     result_dict["data"]["similar_house_deal_num"] = similar_house_deal_num
     result_dict["data"]["similar_house_deal_avg_showing_time"] = similar_house_deal_avg_showing_time
@@ -97,6 +108,37 @@ def get_similar_info_homepage(result_dict, similar_dict):
     else:
         result_dict["data"]["similar_house_deal_list"] = similar_house_deal_list
 
+def get_similar_sold_list(info_dict, similar_dict):
+    similar_house_deal_list = []
+    if similar_dict.has_key("sold_similar"):
+        similar_house_deal_list = similar_dict["sold_similar"]
+    info_dict["data"]["similar_house_deal_list"] = similar_house_deal_list
+
+@app.route('/yzd_weekly_report_similar_sold_list')
+def yzd_weekly_similar_sold_list():
+    args_dict = request.args.to_dict()
+    if 'house_date' in args_dict:
+        house_date = str(args_dict['house_date'])
+    else:
+        house_date = ''
+
+    info_dict = {}
+    info_dict['data']['error_code'] = 0
+    info_dict['data']['error_msg'] = ''
+
+    redis_similar_key = "yzd_weekly_report_" + house_date
+    try:
+        redis_info = conf.redis_conn_info
+        redis_conn = redis.Redis( host = redis_info["host"], port = redis_info["port"], db = redis_info["db"])
+        similar_house = json.loads(redis_conn.get(redis_similar_key))
+        get_similar_sold_list(info_dict, similar_house[house_date])
+    except Exception, e:
+        info_dict['data']['error_msg'] += 'can not get similar information;'
+        info_dict["data"]["similar_house_deal_list"] = []
+        info_dict["data"]["error_code"] = 1
+        traceback.print_exc()
+    return json.dumps(info_dict)
+
 @app.route('/yzd_weekly_report_homepage')
 def get_yzd_weekly_report():
     args_dict = request.args.to_dict()
@@ -104,7 +146,7 @@ def get_yzd_weekly_report():
         house_date = str(args_dict['house_date'])
     else:
         house_date = ''
-    #house_date = '101092295963_20160627'
+    #house_date = '101092295963_20170624'
     redis_similar_key = "yzd_weekly_report_" + house_date
     house_code = house_date.split("_")[0]
     report_date = house_date.split("_")[1]
@@ -116,7 +158,11 @@ def get_yzd_weekly_report():
 
     # 获取相似房源数据
     try:
-        similar_house = json.loads(rc.rc.get(redis_similar_key))
+        print "get similar sold data!"
+        redis_info = conf.redis_conn_info
+        redis_conn = redis.Redis( host = redis_info["host"], port = redis_info["port"], db = redis_info["db"])
+        similar_house = json.loads(redis_conn.get(redis_similar_key))
+        print similar_house
         get_similar_info_homepage(info_dict, similar_house[house_date])
     except Exception, e:
         info_dict["data"]['error_code'] = 1

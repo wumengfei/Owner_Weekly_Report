@@ -23,7 +23,7 @@ class Redis_client(object):
     def __init__(self, redis_info):
         try:
             pool = redis.ConnectionPool( host = redis_info["host"], port = redis_info["port"], db = redis_info["db"],\
-                              socket_connect_timeout = redis_info["redis_con_timeout"],\
+                              password = redis_info["redis_pwd"], socket_connect_timeout = redis_info["redis_con_timeout"],\
                               socket_timeout = redis_info["redis_trans_timeout"])
             self.rc = redis.StrictRedis(connection_pool=pool)
         except:

@@ -30,7 +30,7 @@ deal_house = "data/" + day + "/" + "house_deal.txt"
 list_house = "data/" + day + "/" + "house_onsale.txt"
 
 # base on today, minus two weeks, means save two week data
-redis_save_window = datetime.strftime((now - timedelta(days=29)), "%Y%m%d")
+#redis_save_window = datetime.strftime((now - timedelta(days=29)), "%Y%m%d")
 showing_file = "data/" + day + "/" + "house_showing.txt"  # 本周带看量
 
 

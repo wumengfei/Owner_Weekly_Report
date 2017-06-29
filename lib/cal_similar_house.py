@@ -21,6 +21,7 @@ import redis
 import traceback
 
 rc = Redis_client(conf.cluster_redis_conn)
+print rc.rc
 
 def str2float(item):
     if type(item) == "str":
@@ -42,6 +43,7 @@ def load_showing_data():
             showing_dict[house_code] += showing
         else:
             showing_dict[house_code] = showing
+    return showing_dict
 
 # 成交房源的汇总信息
 def deal_house_this_week(showing_dict):
@@ -172,13 +174,13 @@ def get_similar_house(index_dict, house_code, res_self):
         tup = get_house_info(rc, house_code)
         if tup is None:
             print house_code, "fail to get house info"
-        print tup
+        #print tup
         cls_id = tup[0]
         resblock_id = tup[2]
         resblock_set = get_neighbour_res(rc, resblock_id, 1)
         resblock_set.add(res_self)
         similar_list = get_recall_houses(index_dict, cls_id, resblock_set)
-        print similar_list
+        #print similar_list
         house_list = []
         for item in similar_list:
             house_list.append(item[0])
@@ -209,6 +211,7 @@ def similar_house_this_week(house_code, sold_house_dict, sold_similar_list):
             result_dict[key]["sold_similar"].sort(key=lambda x:x[2], reverse = True)  # 按照带看量大小排序
         except Exception, e:
             traceback.print_exc()
+    return result_dict
 
 def weekly_report(sold_house_dict):
     file_obj = open(conf.list_house, 'r') # 当前挂牌房源
@@ -237,12 +240,14 @@ def weekly_report(sold_house_dict):
             result_dict = similar_house_this_week(house_code, sold_house_dict, sold_similar_list)
             output_obj.write(json.dumps(result_dict))
             output_obj.write('\n')
+            print("output.txt has been writen!")
     except Exception, e:
         traceback.print_exc()
     finally:
         output_obj.close()
         file_obj.close()
-
+'''
+# 老板上传相似房源数据到redis
 def dump_data_to_redis():
     result = "result/" + conf.day + "/output.txt"
     yzd_weekly_report_push_key = 'yzd_weekly_report_msg_queue'
@@ -254,6 +259,7 @@ def dump_data_to_redis():
         rc.rc.lpush(yzd_weekly_report_push_key, key[0])
         hhot_redis_key = 'yzd_weekly_report_' + key[0]
         rc.rc.set(hhot_redis_key, json.dumps(tmp_dict), ex=conf.exp_time)
+'''
 
 if __name__ == "__main__":
     # pt = datetime.today() - timedelta(days=1)
@@ -262,6 +268,5 @@ if __name__ == "__main__":
         showing_dict = load_showing_data()  # 房源id --> 带看数
         sold_house_dict = deal_house_this_week(showing_dict)  # 成交房源信息:成交价/面积/成交时间/签约时间/成交周期/带看次数
         weekly_report(sold_house_dict) # 将相似房源结果输出到 result/day/output.txt中
-        dump_data_to_redis()
     except Exception, e:
         traceback.print_exc()
