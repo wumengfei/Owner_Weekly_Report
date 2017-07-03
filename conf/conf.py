@@ -5,9 +5,11 @@ import sys
 from datetime import datetime
 from datetime import timedelta
 
+time_delta = 0 # 默认为0，补足周日数据时加上时间差
+
 now = datetime.now()
-day = datetime.strftime((now - timedelta(days=1)), "%Y%m%d")
-last_week = datetime.strftime((now - timedelta(days=8)), "%Y%m%d")
+day = datetime.strftime((now - timedelta(days=(1+time_delta))), "%Y%m%d")
+last_week = datetime.strftime((now - timedelta(days=(8+time_delta))), "%Y%m%d")
 
 #redis配置参数
 redis_conn_info = {

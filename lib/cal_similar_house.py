@@ -174,7 +174,7 @@ def get_similar_house(index_dict, house_code, res_self):
         tup = get_house_info(rc, house_code)
         if tup is None:
             print house_code, "fail to get house info"
-        #print tup
+            return []
         cls_id = tup[0]
         resblock_id = tup[2]
         resblock_set = get_neighbour_res(rc, resblock_id, 1)
@@ -197,7 +197,7 @@ def similar_house_this_week(house_code, sold_house_dict, sold_similar_list):
     :return: 按带看量排序的相似房源列表 [房源id, 面积, 带看量, 成交周期]
     '''
     result_dict = {}
-    today = (datetime.now() - timedelta(days = 1)).strftime("%Y%m%d")
+    today = (datetime.now() - timedelta(days = (1+conf.time_delta))).strftime("%Y%m%d")
     key = house_code + "_" + today
     result_dict[key] = {}
     if len(sold_similar_list) > 0:

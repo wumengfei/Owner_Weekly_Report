@@ -137,7 +137,7 @@ def update_redis(redis_key, house_date, hot_dic):
 
 if __name__ == "__main__":
     # 临时修改days,补足上线前缺失数据
-    pt = datetime.today() - timedelta(days=1)
+    pt = datetime.today() - timedelta(days=(1+conf.time_delta))
     follow_dic = get_week_follow(pt)
     view_dic = get_week_view(pt)
     show_dic = get_week_show(pt)

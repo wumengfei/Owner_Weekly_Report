@@ -51,21 +51,23 @@ def get_hot_info(info_dict, house_date):
     last_hot_info = eval(str(redis_conn.get(last_hot_key)))
     if this_hot_info == None:
         info_dict["data"]["error_msg"] += "loss hot data this week"
-        exit(1)
-    if last_hot_info == None:
-        info_dict["data"]["error_msg"] += "loss hot data last week"
-        exit(1)
-    print type(this_hot_info)
+        return 0 
     info_dict["data"]["view_list_of_this_week"] = this_hot_info["view_nums"]
     info_dict["data"]["total_view_num_of_this_week"] = np.sum(this_hot_info["view_nums"])
     info_dict["data"]["showing_list_of_this_week"] = this_hot_info["show_nums"]
     info_dict["data"]["total_showing_num_of_this_week"] = np.sum(this_hot_info["show_nums"])
+    info_dict["data"]["follow_this_week"] = this_hot_info["follow_nums"]
+
+    if last_hot_info == None:
+        info_dict["data"]["error_msg"] += "loss hot data last week"
+        return 0
+    print type(this_hot_info)
     info_dict["data"]["view_list_of_last_week"] = last_hot_info["view_nums"]
     info_dict["data"]["total_view_num_of_last_week"] = np.sum(last_hot_info["view_nums"])
     info_dict["data"]["showing_list_of_last_week"] = last_hot_info["show_nums"]
     info_dict["data"]["total_showing_num_of_last_week"] = np.sum(last_hot_info["show_nums"])
-    info_dict["data"]["follow_this_week"] = this_hot_info["follow_nums"]
     info_dict["data"]["follow_last_week"] = last_hot_info["follow_nums"]
+    
     view_percent = 0 if np.sum(last_hot_info["view_nums"])==0 else \
         round((np.sum(this_hot_info["view_nums"])-np.sum(last_hot_info["view_nums"]))/np.sum(last_hot_info["view_nums"]),1)
     showing_percent = 0 if np.sum(last_hot_info["show_nums"])==0 else \
