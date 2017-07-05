@@ -18,6 +18,12 @@ redis_conn_info = {
     "db": 1
 }
 
+agent_redis_conn = {
+    "host": "172.30.0.20",\
+    "port": 6379,\
+    "db": 2
+}
+
 cluster_redis_conn = {
     "host": "10.10.9.16",\
     "port": 6379,\
@@ -39,8 +45,11 @@ showing_file = "data/" + day + "/" + "house_showing.txt"  # 本周带看量
 output_dir = "result/" + day
 if not os.path.exists(output_dir):
     os.mkdir(output_dir)
-output = output_dir + "/" + "output.txt"
+output = output_dir + "/" + "output.txt" # 业主端相似成交输出文件
+result_file = output_dir + "/" + "result.txt" # 经纪人端相似成交输出文件
 
-exp_time = 86400 * 35 # 周报redis中key的有效时长
+
+exp_time = 86400 * 35 # 业主端周报redis中key的有效时长
+agent_exp_time = 86400 * 56 # 经纪人端周报redis中key的有效时长
 
 homepage_show = 3

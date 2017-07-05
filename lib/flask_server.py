@@ -125,6 +125,7 @@ def yzd_weekly_similar_sold_list():
         house_date = ''
 
     info_dict = {}
+    info_dict['data'] = {}
     info_dict['data']['error_code'] = 0
     info_dict['data']['error_msg'] = ''
 
@@ -150,8 +151,6 @@ def get_yzd_weekly_report():
         house_date = ''
     #house_date = '101092295963_20170624'
     redis_similar_key = "yzd_weekly_report_" + house_date
-    house_code = house_date.split("_")[0]
-    report_date = house_date.split("_")[1]
 
     info_dict = {}
     info_dict['data'] = {}
@@ -187,12 +186,15 @@ def get_yzd_weekly_report():
         info_dict["data"]["view_list_of_this_week"] = []
         info_dict["data"]["total_view_num_of_last_week"] = 0
         info_dict["data"]["view_list_of_last_week"] = []
-        info_dict["data"]["total_showing_num_of_this_week"] = 0
         info_dict["data"]["view_percent"] = 0
+        info_dict["data"]["total_showing_num_of_this_week"] = 0
         info_dict["data"]["showing_list_of_this_week"] = []
         info_dict["data"]["total_showing_num_of_last_week"] = 0
         info_dict["data"]["showing_list_of_last_week"] = []
         info_dict["data"]["showing_percent"] = 0
+        info_dict["data"]["follow_this_week"] = 0
+        info_dict["data"]["follow_last_week"] = 0
+        info_dict["data"]["follow_percent"] = 0
         traceback.print_exc()
     return json.dumps(info_dict)
 

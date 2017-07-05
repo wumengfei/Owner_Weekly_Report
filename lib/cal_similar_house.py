@@ -240,7 +240,7 @@ def weekly_report(sold_house_dict):
             result_dict = similar_house_this_week(house_code, sold_house_dict, sold_similar_list)
             output_obj.write(json.dumps(result_dict))
             output_obj.write('\n')
-            print("output.txt has been writen!")
+        print("output.txt has been writen!")
     except Exception, e:
         traceback.print_exc()
     finally:
